@@ -402,7 +402,19 @@ struct ExportedClient {
 fn main() -> Result<(), String> {
     pretty_env_logger::init();
 
-    let mut rdr = csv::Reader::from_reader(io::stdin());
+    let args: Vec<String> = std::env::args().collect();
+
+    if args.len() != 2 {
+        println!("Usage: {} transactions.csv", args[0]);
+        return Err(format!("Usage: {} transactions.csv", args[0]));
+    }
+
+    let ref path = args[1];
+
+    let mut rdr = csv::Reader::from_path(path).map_err(|err| {
+        error!("Problem opening input file: {}", err);
+        format!("Problem opening input file: {}", err)
+    })?;
     let mut state = State::new();
 
     for result in rdr.deserialize() {
