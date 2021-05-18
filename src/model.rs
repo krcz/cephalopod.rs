@@ -17,6 +17,9 @@ pub enum AccountError {
     },
 }
 
+/// Error type representing some problem with the input data
+///
+/// Such errors should be logged and ignored
 #[derive(Error, Debug, Clone, Copy)]
 pub enum TransactionError {
     #[error("account {client} is locked")]
@@ -47,6 +50,10 @@ pub enum TransactionError {
     TransactionClientMismatch { tx: u32, client: u16 },
 }
 
+/// Error type representing major problem with the code
+///
+/// Such errors should never occur. If it happens, the application should stop
+/// immediately as it is a symptom of data corruption or application error.
 #[derive(Error, Debug, Clone, Copy)]
 pub enum IntegrityError {
     #[error("state unavailable for transaction {tx}")]
@@ -116,10 +123,14 @@ pub enum TransactionState {
     Chargebacked,
 }
 
+/// Representation of a client's account state
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Account {
+    /// Funds available to withdrawals
     pub available: Decimal,
+    /// Funds locked for disputes
     pub held: Decimal,
+    /// Whether or not the account is locked
     pub locked: bool,
 }
 
@@ -205,9 +216,15 @@ impl Account {
     }
 }
 
+/// Representation of system state
+///
+/// Stores information of all accounts and past transactions
 pub struct State {
+    /// Mapping from client's id to their account state
     pub(crate) accounts: HashMap<u16, Account>,
+    /// Mapping from transaction id to original transaction (i.e. withdrawal or deposit)
     transaction_history: HashMap<u32, Transaction>,
+    /// Mapping from transaction id to transaction state that might me affected by disputes
     transaction_state: HashMap<u32, TransactionState>,
 }
 
@@ -469,6 +486,9 @@ impl State {
         }
     }
 
+    /// Applies a transaction to the state
+    ///
+    /// If error is returned it means that the transaction has not been applied
     pub fn apply_transaction(&mut self, tx: &Transaction) -> Result<(), CephalopodError> {
         match tx.tpe {
             TransactionType::Deposit => self.apply_deposit(tx),
@@ -479,6 +499,7 @@ impl State {
         }
     }
 
+    /// Iterates over all the accounts in the state
     pub fn iter_clients<'a>(&'a self) -> impl Iterator<Item = (&'a u16, &'a Account)> {
         self.accounts.iter()
     }
