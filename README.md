@@ -13,4 +13,5 @@ Known shortcomings:
 - Error support is somewhat convoluted. That is mostly caused by including the transaction that caused the error. I can now tell it was unnecessary and the code would be simplified by removing it.
 - There aren't many comments, but the code should be mostly self-documenting.
 - **The task description doesn't explain what "locked account" means. I assumed that no transaction can be applied to such account, but the author might have had something different in mind.** 
+- **The description mentions that in case of dispute, available funds should be decreased. That makes only sense when the disputed transaction is a deposit, so I'm making assumption that withdrawals cannot be disputed**
 - Once a dispute is resolved, it cannot be disputed again. That semantics made sense to me, but it might not be what was expected either.
